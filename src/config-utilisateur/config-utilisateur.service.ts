@@ -11,7 +11,7 @@ import { ProfilPublicResponse } from './types/profil-public-response.type';
 
 const CODE_CONTRAINTE_UNIQUE = 'P2002';
 
-export const DELAI_PRESENCE_ACTIVE_MS = 90_000;
+const DELAI_PRESENCE_ACTIVE_MS = 90_000;
 
 @Injectable()
 export class ConfigUtilisateurService {
