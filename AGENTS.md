@@ -1,6 +1,6 @@
 # AGENTS.md — Chatvardage User Config Service
 
-Ce fichier contient les règles de travail pour tout agent IA ou développeur qui modifie ce dépôt.
+Règles de travail pour toute personne ou tout agent qui modifie ce dépôt.
 
 ## Contexte du projet
 
@@ -8,11 +8,12 @@ Ce dépôt est le **User-Config-Service** de Chatvardage.
 
 Architecture d'équipe :
 
-- `Frontend` : Electron et ChatGateway réel.
+- `Frontend` : client Electron.
+- `Mobile` : application Expo (React Native).
 - `Serveur-API` : API Gateway / point d'entrée unique.
 - `Authentification` : utilisateurs, authentification et rôles.
-- `Room-Service` : gestion et administration des salons.
-- `Message-Service` : messages privés, historique et temps réel.
+- `Room-Service` : serveurs, membres, rôles et salons.
+- `Message-Service` : messages privés et de salon, historique et temps réel.
 - `User-Config-Service` : alias, thème, langue, présence et préférences de notification. **Ce dépôt.**
 - `Dashboard` : panneau d'administration / AdminJS.
 - `Infra` : Docker Compose, PostgreSQL, Redis et orchestration globale.
@@ -111,7 +112,7 @@ Après un conflit de création concurrente (`P2002`), `recupererOuCreer` relit l
 
 ### Validation de `alias`/`theme`/`langue`/`modeNotification` : à la frontière (DTO) seulement, pas dans le service
 
-`ConfigUtilisateurService.mettreAJour` fait `dto.alias.trim()` sans revérifier que `dto.alias` n'est pas `null`, alors que rien n'empêche *syntaxiquement* TypeScript de laisser passer `null` (le type `alias?: string` n'est pas vérifié à l'exécution). Ceci est volontaire, pas un oubli :
+`ConfigUtilisateurService.mettreAJour` fait `dto.alias.trim()` sans revérifier que `dto.alias` n'est pas `null`, alors que rien n'empêche _syntaxiquement_ TypeScript de laisser passer `null` (le type `alias?: string` n'est pas vérifié à l'exécution). Ceci est volontaire, pas un oubli :
 
 - Le seul appelant réel de `mettreAJour` est `ConfigUtilisateurController`, qui reçoit un DTO déjà passé par le `ValidationPipe` global. Le DTO utilise `@ValidateIf((o) => o.alias !== undefined)` pour rejeter explicitement `alias: null` en 400 **avant** d'atteindre le service (voir `mettre-a-jour-config.dto.ts` et `mettre-a-jour-config.dto.spec.ts`).
 - Dupliquer une garde `dto.alias == null` dans le service reviendrait à maintenir la même règle à deux endroits pour un cas qui ne peut pas se produire via le système réel aujourd'hui.
@@ -191,16 +192,6 @@ Dans l'image Docker finale (sans npm/npx), utiliser :
 
 En développement/build, `npx prisma migrate deploy` reste disponible.
 
-### Revue PR #7 — 9 octobre 2026
-
-- Les instructions Docker sont alignées sur la commande réellement exécutée et validée.
-- Invocation directe conservée : `build/index.js` est le point d'entrée `bin` du paquet Prisma installé, dont la version est figée. Le chemin est vérifié par le build et les migrations réelles; passer par le lien `.bin` n'améliore pas le comportement actuel et une montée majeure exige de toute façon de revalider l'image.
-- Plage `^4.3.2` conservée : `npm ci` utilise la version exacte du lockfile et ne résout pas une nouvelle version. Régénérer volontairement ce fichier reste soumis aux tests et à l'audit.
-- Titre daté conservé pour identifier le renforcement du 9 octobre. Les limites et conditions de retrait sont explicites; aucun changement de fonctionnement n'est nécessaire.
-- Métadonnées libc des dépendances de développement : aucune dépendance native de production concernée; installation, tests et image déjà validés. Pas de réécriture manuelle du lockfile.
-
-Validation de cette review : documentation uniquement; audit high, lint, build, 83 tests unitaires à couverture 100 % et 24 tests E2E passent.
-
 ## Commandes obligatoires avant de terminer une modification
 
 Installer les dépendances de façon reproductible :
@@ -214,6 +205,7 @@ Puis exécuter au minimum :
 ```bash
 npm audit --audit-level=high
 npm run lint
+npm run format:check
 npm test
 npm run test:e2e
 npm run build
@@ -255,7 +247,7 @@ Les tests E2E doivent refléter les routes actuelles du User-Config-Service.
 
 ## Langue du code
 
-Ce dépôt est rédigé **entièrement en français** : identifiants (variables, méthodes, champs Prisma, routes), messages d'erreur, commentaires et documentation. Seuls les mots-clés du langage/framework (`Controller`, `Service`, `Module`, `class-validator`, etc.) restent en anglais, car ils font partie de NestJS/TypeScript.
+Ce dépôt est rédigé **entièrement en français** : identifiants (variables, méthodes, champs Prisma, routes), messages d'erreur et documentation. Seuls les mots-clés du langage/framework (`Controller`, `Service`, `Module`, `class-validator`, etc.) restent en anglais, car ils font partie de NestJS/TypeScript.
 
 ## Lint, style et qualité
 
@@ -267,6 +259,7 @@ Ce dépôt est rédigé **entièrement en français** : identifiants (variables,
 - Valider les entrées avec les DTO et `class-validator`.
 - Retourner des erreurs HTTP NestJS explicites (`BadRequestException`, `UnauthorizedException`, etc.).
 - Ne pas laisser de code généré, mort ou de dépendances inutilisées.
+- Pas de commentaires dans le code : les explications vont dans le README, le guide du service d'Infra ou ce fichier (section « Décisions de conception à préserver »). Seules restent les directives d'outils (`istanbul ignore`).
 
 ## Fichiers partagés (`src/partage/`)
 
@@ -337,18 +330,16 @@ Dans la description de PR, résumer les changements, indiquer les tests exécut�
 
 Infra est la référence du démarrage complet, des architectures, contrats et scénarios de validation. Le README local décrit le dépôt et ses commandes; les guides détaillés sont dans `A26_5A6_01-Infra/docs/`. Toute modification de contrat doit mettre à jour la référence centrale et ses liens.
 
-### Reprise sécurité — review 6078612422
+## Choix délibérés (ne pas « corriger »)
 
-- Le démarrage invoque le point d’entrée public node_modules/.bin/prisma avec vérification au build, et actualise les paquets Alpine.
-- Les champs libc du verrou décrivent des binaires optionnels de compilation; la construction réelle vérifie la compatibilité. Les réécrire manuellement n’améliore pas la sécurité du service.
-- L’historique des décisions AGENTS est conservé à la demande explicite utilisateur. La date du bilan README indique quand l’audit a été exécuté; la retirer ferait perdre cette information.
-- Les avis favorables sur l’override YAML et le retrait npm/npx ne demandent aucune autre modification.
+- **CLI Prisma appelé directement** (`node_modules/.bin/prisma`, vérifié au build sous l'utilisateur `appuser`) : npm/npx sont absents de l'image finale.
+- **Plage `^4.3.2` de l'`overrides` `js-yaml`** : `npm ci` installe la version exacte du lockfile ; toute régénération passe par l'audit et les tests.
+- **Métadonnées libc du lockfile** : elles décrivent des binaires optionnels de compilation ; pas de réécriture manuelle. Toute nouvelle dépendance native impose de reconstruire l'image Alpine et de rejouer les migrations.
+- **`apk upgrade` dans l'image** : il applique les correctifs système disponibles ; une image de diffusion est identifiée par son digest et rescannée.
+- **`RUN` séparés** entre la suppression privilégiée de npm et le contrôle sans privilège : les fusionner sous root supprimerait cette vérification.
 
-### Review 6084451446 — actualisation des images
+- **Jeton interne** : la comparaison des longueurs précède `timingSafeEqual`, qui refuse des buffers de tailles différentes ; ce chemin doit répondre 401 plutôt que lever une exception.
+- **Seuil de présence dans les tests** : les valeurs 90 000 et 91 000 ms vérifient le contrat de 90 secondes décrit ici. Les calculer depuis la constante de production ferait aussi passer les tests après une modification involontaire de ce contrat ; ne pas exporter la constante uniquement pour ces assertions.
+- **Revues GitHub** : configuration, secrets et rotation sont décrits dans le [guide Infra](https://github.com/Chatvardage/A26_5A6_01-Infra/blob/c5fc686f262127f7985684d8df3739b549255eea/docs/revues-github.md). Les recopier dans les commentaires du workflow créerait une seconde procédure à maintenir.
 
-- La vérification du CLI est exécutée sous appuser, comme les migrations, afin de faire échouer le build si les droits runtime ne conviennent pas.
-- apk upgrade est conservé volontairement : les paquets système sont actualisés lors de chaque reconstruction effective; le résultat dépend de la date, tandis que les dépendances npm sont verrouillées. Une image de diffusion doit être identifiée par son digest et rescannée. Épingler des paquets vulnérables pour stabiliser des builds n’est pas retenu.
-- Les RUN séparés restent explicites entre suppression privilégiée et contrôle sans privilège; les fusionner sous root supprimerait cette vérification.
-- L’override ^4.3.2 reste borné à la même majeure et npm ci utilise la version exacte du lock. Une régénération est déjà suivie de l’audit et des tests.
-- Les métadonnées libc optionnelles restent générées par npm : image Alpine construite et migrations réellement exécutées sous appuser. Toute nouvelle dépendance native impose de refaire ces validations.
-- Les décisions AGENTS suivent la demande explicite utilisateur; la date README conserve le contexte du bilan de sécurité. Aucun retrait pour une seule préférence éditoriale.
+- **`source-map-support` retiré** : aucune importation ni option de préchargement ne l'activait dans le code, les scripts ou l'image avant le nettoyage. Sa seule présence dans `devDependencies` ne remappait pas les traces ; le réinstaller sans appel n'en changerait pas le rendu.

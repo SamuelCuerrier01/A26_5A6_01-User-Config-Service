@@ -5,9 +5,6 @@ import { AppModule } from './app.module';
 import { verifierSecretsProduction } from './partage/secrets-production';
 
 export async function bootstrap(): Promise<void> {
-  // Avant tout : pas de démarrage en production avec des secrets de dev.
-  // L'identité vient du Gateway (en-tête x-user-id), cru seulement avec le
-  // jeton interne partagé (voir InternalTokenGuard).
   verifierSecretsProduction({
     jetonInterne: true,
     urlsAvecMotDePasse: ['DATABASE_URL'],
@@ -20,13 +17,9 @@ export async function bootstrap(): Promise<void> {
   }
 
   const app = await NestFactory.create(AppModule);
-  // SIGTERM (docker stop) : fermeture propre (connexions Prisma).
   app.enableShutdownHooks();
 
   app.setGlobalPrefix('api');
-  // CORS_ORIGINS est une variable de config posée par la personne qui déploie
-  // (même confiance que DATABASE_URL/PORT), pas une entrée utilisateur : pas
-  // de validation de format ici. Voir AGENTS.md.
   app.enableCors({
     origin: (process.env.CORS_ORIGINS || 'http://localhost:5173')
       .split(',')
@@ -46,7 +39,7 @@ export async function bootstrap(): Promise<void> {
     .setDescription(
       'API de gestion de la configuration utilisateur de Chatvardage (alias, thème, langue, présence, notifications)',
     )
-    .setVersion('1.0.0')
+    .setVersion('1.0.1')
     .addApiKey({ type: 'apiKey', in: 'header', name: 'x-user-id' }, 'x-user-id')
     .build();
 
@@ -56,7 +49,7 @@ export async function bootstrap(): Promise<void> {
   await app.listen(port, '0.0.0.0');
 }
 
-/* istanbul ignore next -- point d'entrée réel du processus, non exécuté sous Jest */
+/* istanbul ignore next */
 if (require.main === module) {
   bootstrap().catch((erreur: unknown) => {
     console.error(erreur);
