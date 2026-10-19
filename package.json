@@ -1,6 +1,6 @@
 {
   "name": "a26-5a6-01-chatvardage-user-config-service",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Microservice de configuration utilisateur de Chatvardage",
   "private": true,
   "license": "UNLICENSED",

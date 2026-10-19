@@ -61,7 +61,7 @@ describe('bootstrap', () => {
       'Chatvardage User Config Service',
     );
     expect(builder.setDescription).toHaveBeenCalled();
-    expect(builder.setVersion).toHaveBeenCalledWith('1.0.0');
+    expect(builder.setVersion).toHaveBeenCalledWith('1.0.1');
     expect(builder.addApiKey).toHaveBeenCalledTimes(1);
     expect(build).toHaveBeenCalled();
     expect(listen).toHaveBeenCalledWith(3999, '0.0.0.0');

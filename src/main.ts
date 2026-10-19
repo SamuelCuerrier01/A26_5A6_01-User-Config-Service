@@ -39,7 +39,7 @@ export async function bootstrap(): Promise<void> {
     .setDescription(
       'API de gestion de la configuration utilisateur de Chatvardage (alias, thème, langue, présence, notifications)',
     )
-    .setVersion('1.0.0')
+    .setVersion('1.0.1')
     .addApiKey({ type: 'apiKey', in: 'header', name: 'x-user-id' }, 'x-user-id')
     .build();
 
