@@ -3,7 +3,6 @@ services:
     build: .
     environment:
       PORT: 3005
-      # Jeton interne exigé avec x-user-id (voir README).
       INTERNAL_SERVICE_TOKEN: chatvardage_internal_dev
       DATABASE_URL: postgresql://chatvardage:chatvardage@postgres:5432/chatvardage?schema=public
     ports:
@@ -20,8 +19,6 @@ services:
 
   postgres:
     image: postgres:17-alpine
-    # Identifiants jetables pour ce PostgreSQL local uniquement (lié à
-    # localhost, détruit avec `down -v`) — voir AGENTS.md, pas un secret réel.
     environment:
       POSTGRES_USER: chatvardage
       POSTGRES_PASSWORD: chatvardage

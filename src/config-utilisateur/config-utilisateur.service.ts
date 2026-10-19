@@ -11,17 +11,12 @@ import { ProfilPublicResponse } from './types/profil-public-response.type';
 
 const CODE_CONTRAINTE_UNIQUE = 'P2002';
 
-// Un client connecté renvoie sa présence (PUT /presence) toutes les ~20 s,
-// ce qui rafraîchit vuLaDerniereFois. Au-delà de ce délai sans signe de vie
-// (app fermée, plantage, réseau coupé), l'utilisateur est considéré absent
-// même si son statut choisi est encore `enLigne`.
 export const DELAI_PRESENCE_ACTIVE_MS = 90_000;
 
 @Injectable()
 export class ConfigUtilisateurService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Compte supprimé (route interne). Vrai si une configuration existait. */
   async supprimer(idUtilisateur: string): Promise<boolean> {
     const { count } = await this.prisma.configUtilisateur.deleteMany({
       where: { idUtilisateur },
@@ -45,14 +40,10 @@ export class ConfigUtilisateurService {
       });
       return this.versReponse(config);
     } catch (erreur) {
-      // Deux premières requêtes concurrentes du même utilisateur peuvent
-      // toutes deux tenter la création : on relit la ligne créée par l'autre.
       if (
         erreur instanceof Prisma.PrismaClientKnownRequestError &&
         erreur.code === CODE_CONTRAINTE_UNIQUE
       ) {
-        // La ligne de l'autre requête a pu être effacée entre-temps (compte
-        // supprimé, route interne) : conflit plutôt qu'une erreur 500.
         const config = await this.prisma.configUtilisateur.findUnique({
           where: { idUtilisateur },
         });
@@ -81,10 +72,6 @@ export class ConfigUtilisateurService {
       throw new BadRequestException('Aucune modification fournie');
     }
 
-    // dto.alias ne peut valoir que string|undefined ici, jamais null : le
-    // ValidationPipe global (@ValidateIf du DTO) rejette null en 400 avant
-    // d'atteindre ce service. Le trim idempotent préserve aussi cette
-    // normalisation pour un appel direct avec un DTO déjà valide.
     const aliasTrim = dto.alias?.trim();
     const donnees = {
       ...(aliasTrim !== undefined
@@ -95,7 +82,6 @@ export class ConfigUtilisateurService {
       ...(dto.modeNotification !== undefined
         ? { modeNotification: dto.modeNotification }
         : {}),
-      // Même convention que l'alias : chaîne vide = retirer l'avatar.
       ...(dto.avatar !== undefined ? { avatar: dto.avatar || null } : {}),
     };
 
@@ -111,8 +97,6 @@ export class ConfigUtilisateurService {
     idUtilisateur: string,
     statut: StatutPresence,
   ): Promise<ConfigUtilisateurResponse> {
-    // Mis à jour même en passant horsLigne : c'est justement l'instant de la
-    // déconnexion qui doit être affiché comme « vu(e) pour la dernière fois ».
     const vuLaDerniereFois = new Date();
     const config = await this.prisma.configUtilisateur.upsert({
       where: { idUtilisateur },
@@ -122,11 +106,6 @@ export class ConfigUtilisateurService {
     return this.versReponse(config);
   }
 
-  /**
-   * Profils publics (alias, avatar, présence) d'autres utilisateurs. Les
-   * identifiants sans configuration sont simplement absents du résultat : on
-   * ne crée JAMAIS de ligne pour quelqu'un d'autre (voir recupererOuCreer).
-   */
   async listerProfilsPublics(
     ids: string[],
     inclureAvatar = true,

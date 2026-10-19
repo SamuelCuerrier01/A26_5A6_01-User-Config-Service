@@ -21,8 +21,6 @@ import { MettreAJourConfigDto } from './dto/mettre-a-jour-config.dto';
 import { ConfigUtilisateurResponse } from './types/config-utilisateur-response.type';
 import { ProfilPublicResponse } from './types/profil-public-response.type';
 
-// Borne la taille de l'en-tête transmis par la Gateway sans imposer de format
-// d'identifiant propre au service Authentification.
 const LONGUEUR_MAX_ID_UTILISATEUR = 255;
 
 @ApiTags('Configuration utilisateur')
@@ -38,7 +36,6 @@ const LONGUEUR_MAX_ID_UTILISATEUR = 255;
   description: 'Secret partagé INTERNAL_SERVICE_TOKEN, posé par l’API Gateway',
 })
 @Controller('config-utilisateur')
-// x-user-id n'est cru que s'il vient du Gateway (voir InternalTokenGuard).
 @UseGuards(InternalTokenGuard)
 export class ConfigUtilisateurController {
   constructor(
@@ -58,7 +55,6 @@ export class ConfigUtilisateurController {
     );
   }
 
-  // Déclarée avant toute route paramétrée : `publiques` est un segment fixe.
   @Get('publiques')
   @ApiOperation({
     summary:
@@ -68,8 +64,6 @@ export class ConfigUtilisateurController {
     @Query() requete: ListerProfilsPublicsDto,
     @Headers('x-user-id') idUtilisateur?: string,
   ): Promise<ProfilPublicResponse[]> {
-    // Réservé aux utilisateurs authentifiés, même si les données sont
-    // publiques entre membres de Chatvardage.
     this.exigerIdUtilisateur(idUtilisateur);
     return this.configUtilisateurService.listerProfilsPublics(
       requete.ids,

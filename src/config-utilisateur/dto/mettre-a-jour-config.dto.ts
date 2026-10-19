@@ -9,19 +9,11 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-// Taille maximale de l'avatar (data URL complète). Doit rester sous la
-// limite JSON par défaut d'Express (100 Ko) avec le reste du corps : le
-// Frontend redimensionne l'image à 256 px avant envoi (~20-60 Ko).
 export const LONGUEUR_MAX_AVATAR = 90_000;
 
-// data URL d'image matricielle uniquement (pas de SVG : il peut contenir du
-// script), ou chaîne vide pour retirer l'avatar.
 const FORMAT_AVATAR =
   /^(data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2})?$/;
 
-// @ValidateIf(champ !== undefined) rejette explicitement null (400) tout en
-// gardant le champ optionnel. Messages d'erreur par défaut de class-validator
-// volontairement non personnalisés pour null : voir AGENTS.md.
 export class MettreAJourConfigDto {
   @ApiPropertyOptional({
     example: 'Ariane',
