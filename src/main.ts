@@ -49,7 +49,7 @@ export async function bootstrap(): Promise<void> {
   await app.listen(port, '0.0.0.0');
 }
 
-/* istanbul ignore next -- point d'entrée réel du processus, non exécuté sous Jest */
+/* istanbul ignore next */
 if (require.main === module) {
   bootstrap().catch((erreur: unknown) => {
     console.error(erreur);
