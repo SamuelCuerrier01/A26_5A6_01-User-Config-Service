@@ -6,12 +6,16 @@ services:
       INTERNAL_SERVICE_TOKEN: chatvardage_internal_dev
       DATABASE_URL: postgresql://chatvardage:chatvardage@postgres:5432/chatvardage?schema=public
     ports:
-      - "3005:3005"
+      - '3005:3005'
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3005/api/health >/dev/null || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'wget -qO- http://localhost:3005/api/health >/dev/null || exit 1',
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -24,11 +28,11 @@ services:
       POSTGRES_PASSWORD: chatvardage
       POSTGRES_DB: chatvardage
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - user-config-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chatvardage -d chatvardage"]
+      test: ['CMD-SHELL', 'pg_isready -U chatvardage -d chatvardage']
       interval: 5s
       timeout: 3s
       retries: 10

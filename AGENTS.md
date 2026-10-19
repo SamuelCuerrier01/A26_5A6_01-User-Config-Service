@@ -112,7 +112,7 @@ Après un conflit de création concurrente (`P2002`), `recupererOuCreer` relit l
 
 ### Validation de `alias`/`theme`/`langue`/`modeNotification` : à la frontière (DTO) seulement, pas dans le service
 
-`ConfigUtilisateurService.mettreAJour` fait `dto.alias.trim()` sans revérifier que `dto.alias` n'est pas `null`, alors que rien n'empêche *syntaxiquement* TypeScript de laisser passer `null` (le type `alias?: string` n'est pas vérifié à l'exécution). Ceci est volontaire, pas un oubli :
+`ConfigUtilisateurService.mettreAJour` fait `dto.alias.trim()` sans revérifier que `dto.alias` n'est pas `null`, alors que rien n'empêche _syntaxiquement_ TypeScript de laisser passer `null` (le type `alias?: string` n'est pas vérifié à l'exécution). Ceci est volontaire, pas un oubli :
 
 - Le seul appelant réel de `mettreAJour` est `ConfigUtilisateurController`, qui reçoit un DTO déjà passé par le `ValidationPipe` global. Le DTO utilise `@ValidateIf((o) => o.alias !== undefined)` pour rejeter explicitement `alias: null` en 400 **avant** d'atteindre le service (voir `mettre-a-jour-config.dto.ts` et `mettre-a-jour-config.dto.spec.ts`).
 - Dupliquer une garde `dto.alias == null` dans le service reviendrait à maintenir la même règle à deux endroits pour un cas qui ne peut pas se produire via le système réel aujourd'hui.
@@ -205,6 +205,7 @@ Puis exécuter au minimum :
 ```bash
 npm audit --audit-level=high
 npm run lint
+npm run format:check
 npm test
 npm run test:e2e
 npm run build
