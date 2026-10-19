@@ -340,6 +340,6 @@ Infra est la référence du démarrage complet, des architectures, contrats et s
 
 - **Jeton interne** : la comparaison des longueurs précède `timingSafeEqual`, qui refuse des buffers de tailles différentes ; ce chemin doit répondre 401 plutôt que lever une exception.
 - **Seuil de présence dans les tests** : les valeurs 90 000 et 91 000 ms vérifient le contrat de 90 secondes décrit ici. Les calculer depuis la constante de production ferait aussi passer les tests après une modification involontaire de ce contrat ; ne pas exporter la constante uniquement pour ces assertions.
-- **Revues GitHub** : configuration, secrets et rotation sont décrits dans le [guide Infra](https://github.com/Chatvardage/A26_5A6_01-Infra/blob/d1c03d4989bce3a72cf80d8594c1b0787cb07d20/docs/revues-github.md). Les recopier dans les commentaires du workflow créerait une seconde procédure à maintenir.
+- **Revues GitHub** : configuration, secrets et rotation sont décrits dans le [guide Infra](https://github.com/Chatvardage/A26_5A6_01-Infra/blob/c5fc686f262127f7985684d8df3739b549255eea/docs/revues-github.md). Les recopier dans les commentaires du workflow créerait une seconde procédure à maintenir.
 
 - **`source-map-support` retiré** : aucune importation ni option de préchargement ne l'activait dans le code, les scripts ou l'image avant le nettoyage. Sa seule présence dans `devDependencies` ne remappait pas les traces ; le réinstaller sans appel n'en changerait pas le rendu.
