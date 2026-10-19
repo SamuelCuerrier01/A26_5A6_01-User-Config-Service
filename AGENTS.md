@@ -337,3 +337,7 @@ Infra est la référence du démarrage complet, des architectures, contrats et s
 - **Métadonnées libc du lockfile** : elles décrivent des binaires optionnels de compilation ; pas de réécriture manuelle. Toute nouvelle dépendance native impose de reconstruire l'image Alpine et de rejouer les migrations.
 - **`apk upgrade` dans l'image** : il applique les correctifs système disponibles ; une image de diffusion est identifiée par son digest et rescannée.
 - **`RUN` séparés** entre la suppression privilégiée de npm et le contrôle sans privilège : les fusionner sous root supprimerait cette vérification.
+
+- **Jeton interne** : la comparaison des longueurs précède `timingSafeEqual`, qui refuse des buffers de tailles différentes ; ce chemin doit répondre 401 plutôt que lever une exception.
+- **Seuil de présence dans les tests** : les valeurs 90 000 et 91 000 ms vérifient le contrat de 90 secondes décrit ici. Les calculer depuis la constante de production ferait aussi passer les tests après une modification involontaire de ce contrat ; ne pas exporter la constante uniquement pour ces assertions.
+- **Revues GitHub** : configuration, secrets et rotation sont décrits dans le [guide Infra](https://github.com/Chatvardage/A26_5A6_01-Infra/blob/main/docs/revues-github.md). Les recopier dans les commentaires du workflow créerait une seconde procédure à maintenir.
