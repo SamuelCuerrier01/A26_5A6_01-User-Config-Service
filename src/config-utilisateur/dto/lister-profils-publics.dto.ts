@@ -11,11 +11,8 @@ import {
   MinLength,
 } from 'class-validator';
 
-// Nombre maximal d'identifiants par requête : borne le coût de la requête
-// (et la taille de la réponse, jusqu'à ~90 Ko par avatar).
 export const NOMBRE_MAX_IDS_PUBLICS = 100;
 
-// Query string `?ids=a,b,c&inclureAvatar=false`.
 export class ListerProfilsPublicsDto {
   @ApiPropertyOptional({
     example: 'user-1,user-2',

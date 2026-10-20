@@ -3,16 +3,19 @@ services:
     build: .
     environment:
       PORT: 3005
-      # Jeton interne exigé avec x-user-id (voir README).
       INTERNAL_SERVICE_TOKEN: chatvardage_internal_dev
       DATABASE_URL: postgresql://chatvardage:chatvardage@postgres:5432/chatvardage?schema=public
     ports:
-      - "3005:3005"
+      - '3005:3005'
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3005/api/health >/dev/null || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'wget -qO- http://localhost:3005/api/health >/dev/null || exit 1',
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -20,18 +23,16 @@ services:
 
   postgres:
     image: postgres:17-alpine
-    # Identifiants jetables pour ce PostgreSQL local uniquement (lié à
-    # localhost, détruit avec `down -v`) — voir AGENTS.md, pas un secret réel.
     environment:
       POSTGRES_USER: chatvardage
       POSTGRES_PASSWORD: chatvardage
       POSTGRES_DB: chatvardage
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - user-config-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chatvardage -d chatvardage"]
+      test: ['CMD-SHELL', 'pg_isready -U chatvardage -d chatvardage']
       interval: 5s
       timeout: 3s
       retries: 10

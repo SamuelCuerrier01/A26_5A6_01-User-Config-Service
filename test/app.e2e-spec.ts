@@ -4,9 +4,6 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 
-// PrismaService est mocké (pas de vraie base) : convention officielle
-// NestJS pour *.e2e-spec.ts (pipeline HTTP complète via supertest, avec
-// providers remplacés). Voir AGENTS.md avant de renommer ce fichier.
 const JETON = 'jeton-interne-de-test';
 
 describe('User Config Service (e2e)', () => {
@@ -225,7 +222,6 @@ describe('User Config Service (e2e)', () => {
       .expect(401));
 
   it('PATCH /api/config-utilisateur accepte un avatar proche de la taille maximale', () => {
-    // Vérifie que la limite du DTO tient bien sous la limite JSON d'Express.
     const avatar = `data:image/webp;base64,${'A'.repeat(89_000)}`;
     return request(app.getHttpServer())
       .patch('/api/config-utilisateur')

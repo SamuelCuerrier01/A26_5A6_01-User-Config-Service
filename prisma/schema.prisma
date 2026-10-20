@@ -36,8 +36,6 @@ model ConfigUtilisateur {
   statutPresence   StatutPresence    @default(horsLigne)
   vuLaDerniereFois DateTime?
   modeNotification ModeNotification  @default(systeme)
-  // Image de profil en data URL (PNG/JPEG/WebP en base64), déjà
-  // redimensionnée côté Frontend — voir MettreAJourConfigDto.avatar.
   avatar           String?
   creeLe           DateTime          @default(now())
   misAJourLe       DateTime          @default(now()) @updatedAt
